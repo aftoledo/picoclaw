@@ -30,6 +30,5 @@ WORKDIR /app
 # Copy the compiled binary (Makefile typically outputs to build/picoclaw)
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
-EXPOSE 8080
-# Start the gateway and allow it to boot even if the config is currently empty
+EXPOSE 18790
 CMD ["./picoclaw", "gateway", "--allow-empty"]
