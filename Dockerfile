@@ -31,6 +31,5 @@ WORKDIR /app
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
 EXPOSE 8080
-# --home tells picoclaw to use the /app directory for config and db
-# CMD ["./picoclaw", "gateway", "--home", "/app"]
-CMD ["./picoclaw", "onboard"]
+# --home /app tells picoclaw to store config.json and the database in the /app folder
+CMD ["./picoclaw", "gateway", "--home", "/app"]
