@@ -1,38 +1,34 @@
-# ==========================================
-# Stage 1: The Builder Environment
-# ==========================================
+# Use Go 1.26 to satisfy the >= 1.25.8 requirement
 FROM golang:1.26-alpine AS builder
 
-# 1. Install standard build tools + C compilers (gcc/musl)
-RUN apk add --no-cache git make gcc musl-dev
+# Install build tools and C-libraries for Matrix encryption
+RUN apk add --no-cache git make build-base olm-dev
 
 WORKDIR /src
 
+# Clone the specific version/branch from your Railway variables
 ARG PICOCLAW_VERSION=main
 RUN git clone --depth 1 --branch ${PICOCLAW_VERSION} https://github.com/sipeed/picoclaw.git .
 
-# 2. Force CGO on so Matrix/SQLite libraries can compile
+# Enable CGO (required for libolm and SQLite)
 ENV CGO_ENABLED=1
 
-# 3. Use the repo's Makefile (it runs generate steps to create the workspace!)
-RUN make deps
+# FIX: The 'pattern workspace: no matching files' error from your logs
+# We must move the workspace folder to where the 'embed' directive expects it
+RUN mkdir -p cmd/picoclaw/internal/onboard/workspace && \
+    cp -r workspace/* cmd/picoclaw/internal/onboard/workspace/
+
+# Build the binary using the official Makefile
 RUN make build
 
-# ==========================================
-# Stage 2: The Slim Runtime Environment
-# ==========================================
+# Runtime Stage
 FROM debian:bookworm-slim
-
-# Install standard runtime certificates
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates libolm3 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-# 4. Copy the compiled binary from the builder
-COPY --from=builder /src/picoclaw /app/picoclaw
+# Copy the compiled binary (Makefile typically outputs to build/picoclaw)
+COPY --from=builder /src/build/picoclaw /app/picoclaw
 
 EXPOSE 8080
-
 CMD ["./picoclaw"]
