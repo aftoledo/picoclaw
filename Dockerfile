@@ -31,5 +31,5 @@ WORKDIR /app
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
 EXPOSE 8080
-# --home /app tells picoclaw to store config.json and the database in the /app folder
-CMD ["./picoclaw", "gateway", "--home", "/app"]
+# Start the gateway and allow it to boot even if the config is currently empty
+CMD ["./picoclaw", "gateway", "--allow-empty"]
