@@ -41,4 +41,4 @@ ENV PORT=18790
 EXPOSE 18790
 
 # Start the gateway with the mandatory -E flag
-CMD ["./picoclaw", "gateway", "-E"]
+CMD ["./picoclaw", "gateway", "-E", "-a", "0.0.0.0", "-p", "18790"]
