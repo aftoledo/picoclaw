@@ -27,8 +27,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates libolm3 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-# Copy the compiled binary (Makefile typically outputs to build/picoclaw)
+
+# Copy the binary
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
+# ADD THIS LINE: Copy your config.json into the container
+COPY config.json /app/config.json
+
 EXPOSE 18790
+
+# Start with the shorthand flag for allow-empty
 CMD ["./picoclaw", "gateway", "-E"]
