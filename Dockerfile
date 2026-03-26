@@ -32,13 +32,15 @@ WORKDIR /app
 # Copy the binary
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
-# Hard-force the network settings as environment variables
+# ADD THIS LINE HERE:
+COPY config.json /app/config.json
+
+# Hard-force the network settings
 ENV PICOCLAW_SERVER_ADDR=0.0.0.0
 ENV PICOCLAW_SERVER_PORT=18790
 ENV PORT=18790
 
-# Expose the correct port
 EXPOSE 18790
 
-# Start the gateway with the mandatory -E flag
+# Start the gateway
 CMD ["./picoclaw", "gateway", "-E", "-a", "0.0.0.0", "-p", "18790"]
