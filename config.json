@@ -3,6 +3,7 @@
   "model": "openrouter/free",
   "api_key": "${OPENROUTER_API_KEY}",
   "server": {
+    "address": "0.0.0.0",
     "port": 18790
   }
 }
