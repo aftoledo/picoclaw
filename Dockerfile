@@ -31,4 +31,4 @@ WORKDIR /app
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
 EXPOSE 8080
-CMD ["./picoclaw"]
+CMD ["./picoclaw", "gateway"]
