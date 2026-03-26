@@ -31,4 +31,4 @@ WORKDIR /app
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
 EXPOSE 18790
-CMD ["./picoclaw", "gateway", "--allow-empty", "--addr", "0.0.0.0", "--port", "18790"]
+CMD ["./picoclaw", "gateway", "-E"]
