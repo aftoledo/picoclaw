@@ -34,6 +34,13 @@ COPY --from=builder /src/build/picoclaw /app/picoclaw
 # ADD THIS LINE: Copy your config.json into the container
 COPY config.json /app/config.json
 
+
+
+# Force the app to see these specific network settings
+ENV PICOCLAW_SERVER_ADDR=0.0.0.0
+ENV PICOCLAW_SERVER_PORT=18790
+ENV PORT=18790
+
 EXPOSE 18790
 
 # Start with the shorthand flag for allow-empty
