@@ -1,43 +1,36 @@
 # ==========================================
-# Stage 1: Builder
+# Stage 1: The Builder Environment
 # ==========================================
 FROM golang:1.26-alpine AS builder
 
-# Install build dependencies: git, make, AND the C compilers (gcc, musl-dev)
+# 1. Install standard build tools + C compilers (gcc/musl)
 RUN apk add --no-cache git make gcc musl-dev
 
-# Set the working directory
 WORKDIR /src
 
-# Pass a specific version as a build argument, defaulting to 'main'
 ARG PICOCLAW_VERSION=main
-
-# Clone the repository
 RUN git clone --depth 1 --branch ${PICOCLAW_VERSION} https://github.com/sipeed/picoclaw.git .
 
-# IMPORTANT: Enable CGO so SQLite and Matrix encryption can compile
+# 2. Force CGO on so Matrix/SQLite libraries can compile
 ENV CGO_ENABLED=1
 
-# Run 'make deps' to download modules AND generate the embedded workspace files
+# 3. Use the repo's Makefile (it runs generate steps to create the workspace!)
 RUN make deps
-
-# Build the project
 RUN make build
 
-
 # ==========================================
-# Stage 2: Runtime
+# Stage 2: The Slim Runtime Environment
 # ==========================================
 FROM debian:bookworm-slim
 
-# Install the runtime dependencies
+# Install standard runtime certificates
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl ca-certificates git && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
+# 4. Copy the compiled binary from the builder
 COPY --from=builder /src/picoclaw /app/picoclaw
 
 EXPOSE 8080
