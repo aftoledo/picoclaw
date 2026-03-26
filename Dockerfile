@@ -31,4 +31,5 @@ WORKDIR /app
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
 EXPOSE 8080
-CMD ["./picoclaw", "gateway"]
+# --home tells picoclaw to use the /app directory for config and db
+CMD ["./picoclaw", "gateway", "--home", "/app"]
