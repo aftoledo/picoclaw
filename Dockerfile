@@ -26,22 +26,19 @@ FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates libolm3 && rm -rf /var/lib/apt/lists/*
 
+# Move to the app directory
 WORKDIR /app
 
 # Copy the binary
 COPY --from=builder /src/build/picoclaw /app/picoclaw
 
-# ADD THIS LINE: Copy your config.json into the container
-COPY config.json /app/config.json
-
-
-
-# Force the app to see these specific network settings
+# Hard-force the network settings as environment variables
 ENV PICOCLAW_SERVER_ADDR=0.0.0.0
 ENV PICOCLAW_SERVER_PORT=18790
 ENV PORT=18790
 
+# Expose the correct port
 EXPOSE 18790
 
-# Start with the shorthand flag for allow-empty
+# Start the gateway with the mandatory -E flag
 CMD ["./picoclaw", "gateway", "-E"]
