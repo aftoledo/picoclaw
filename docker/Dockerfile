@@ -1,43 +1,45 @@
-# ============================================================
-# Stage 1: Build the picoclaw binary
-# ============================================================
+# ==========================================
+# Stage 1: Builder
+# ==========================================
 FROM golang:1.26-alpine AS builder
 
-RUN apk add --no-cache git make
+# Install build dependencies: git, make, AND the C compilers (gcc, musl-dev)
+RUN apk add --no-cache git make gcc musl-dev
 
+# Set the working directory
 WORKDIR /src
 
-# Cache dependencies
-COPY go.mod go.sum ./
-RUN go mod download
+# Pass a specific version as a build argument, defaulting to 'main'
+ARG PICOCLAW_VERSION=main
 
-# Copy source and build
-COPY . .
+# Clone the repository
+RUN git clone --depth 1 --branch ${PICOCLAW_VERSION} https://github.com/sipeed/picoclaw.git .
+
+# IMPORTANT: Enable CGO so SQLite and Matrix encryption can compile
+ENV CGO_ENABLED=1
+
+# Run 'make deps' to download modules AND generate the embedded workspace files
+RUN make deps
+
+# Build the project
 RUN make build
 
-# ============================================================
-# Stage 2: Minimal runtime image
-# ============================================================
-FROM alpine:3.23
 
-RUN apk add --no-cache ca-certificates tzdata curl
+# ==========================================
+# Stage 2: Runtime
+# ==========================================
+FROM debian:bookworm-slim
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q --spider http://localhost:18790/health || exit 1
+# Install the runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates git && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy binary
-COPY --from=builder /src/build/picoclaw /usr/local/bin/picoclaw
+WORKDIR /app
 
-# Create non-root user and group
-RUN addgroup -g 1000 picoclaw && \
-    adduser -D -u 1000 -G picoclaw picoclaw
+# Copy the compiled binary from the builder stage
+COPY --from=builder /src/picoclaw /app/picoclaw
 
-# Switch to non-root user
-USER picoclaw
+EXPOSE 8080
 
-# Run onboard to create initial directories and config
-RUN /usr/local/bin/picoclaw onboard
-
-ENTRYPOINT ["picoclaw"]
-CMD ["gateway"]
+CMD ["./picoclaw"]
