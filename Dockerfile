@@ -40,7 +40,5 @@ ENV PICOCLAW_SERVER_ADDR=0.0.0.0
 ENV PICOCLAW_SERVER_PORT=18790
 ENV PORT=18790
 
-EXPOSE 18790
-
-# Start the gateway
-CMD ["./picoclaw", "gateway", "-E", "-a", "0.0.0.0", "-p", "18790"]
+EXPOSE 8080
+CMD ["./picoclaw", "gateway", "--allow-empty", "--addr", "0.0.0.0", "--port", "8080"]
