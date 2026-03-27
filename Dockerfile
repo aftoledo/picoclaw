@@ -40,5 +40,6 @@ ENV PICOCLAW_SERVER_ADDR=0.0.0.0
 ENV PICOCLAW_SERVER_PORT=18790
 ENV PORT=18790
 
+# Force the app to listen on the standard Railway port
 EXPOSE 8080
 CMD ["./picoclaw", "gateway", "--allow-empty", "--addr", "0.0.0.0", "--port", "8080"]
